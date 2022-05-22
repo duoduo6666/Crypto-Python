@@ -40,8 +40,8 @@ def SHA1(data:bytes) -> bytes:
     return h[0].to_bytes(4,byteorder) + h[1].to_bytes(4,byteorder) + h[2].to_bytes(4,byteorder) + h[3].to_bytes(4,byteorder) + h[4].to_bytes(4,byteorder)
 
 class SHA1s:
+    __slots__ = ('__h','ROTL','length','__data','__surplus')
     def __calculate(self,data:bytes,h:bytes) -> bytes:
-        ROTL = lambda x,n:((x << n) | (x >> (32 - n))) & 0xffffffff
         byteorder = 'big'
         for ib in [data[i:i + 64] for i in range(0,len(data),64)]:
             # 分组
@@ -49,19 +49,19 @@ class SHA1s:
             for i in [ib[i:i + 4] for i in range(0,len(ib),4)]:
                 W.append(int.from_bytes(i,byteorder))
             for t in range(16,80):
-                W.append(ROTL(W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16],1))
+                W.append(self.ROTL(W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16],1))
             
             # 计算
             a,b,c,d,e = h[0],h[1],h[2],h[3],h[4]
 
             for i in range(0,20):
-                a,b,c,d,e = (ROTL(a,5) + ((b & c) | ((~ b) & d)) + e + 0x5a827999 + W[i]) & 0xffffffff,a,ROTL(b,30),c,d
+                a,b,c,d,e = (self.ROTL(a,5) + ((b & c) | ((~ b) & d)) + e + 0x5a827999 + W[i]) & 0xffffffff,a,self.ROTL(b,30),c,d
             for i in range(20,40):
-                a,b,c,d,e = (ROTL(a,5) + (b ^ c ^ d) + e + 0x6ed9eba1 + W[i]) & 0xffffffff,a,ROTL(b,30),c,d
+                a,b,c,d,e = (self.ROTL(a,5) + (b ^ c ^ d) + e + 0x6ed9eba1 + W[i]) & 0xffffffff,a,self.ROTL(b,30),c,d
             for i in range(40,60):
-                a,b,c,d,e = (ROTL(a,5) + ((b & c) ^ (b & d) ^ (c & d)) + e + 0x8f1bbcdc + W[i]) & 0xffffffff,a,ROTL(b,30),c,d
+                a,b,c,d,e = (self.ROTL(a,5) + ((b & c) ^ (b & d) ^ (c & d)) + e + 0x8f1bbcdc + W[i]) & 0xffffffff,a,self.ROTL(b,30),c,d
             for i in range(60,80):
-                a,b,c,d,e = (ROTL(a,5) + (b ^ c ^ d) + e + 0xca62c1d6 + W[i]) & 0xffffffff,a,ROTL(b,30),c,d
+                a,b,c,d,e = (self.ROTL(a,5) + (b ^ c ^ d) + e + 0xca62c1d6 + W[i]) & 0xffffffff,a,self.ROTL(b,30),c,d
 
             h[0] += a
             h[1] += b
@@ -77,6 +77,7 @@ class SHA1s:
 
     def __init__(self,data:bytes=b'') -> None:
         self.__h = [0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0]
+        self.ROTL = lambda x,n:((x << n) | (x >> (32 - n))) & 0xffffffff
         self.length = len(data)
         if self.length > 64:
             self.__h = self.__calculate(data[:(self.length - self.length % 64)],self.__h)
