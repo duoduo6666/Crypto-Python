@@ -1,16 +1,14 @@
 def SHA1(data:bytes) -> bytes:
-    ROTL,byteorder = lambda x,n:((x << n) | (x >> (32 - n))) & 0xffffffff,'big'
-    h = [0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0]
-
+    ROTL,byteorder,h,l = lambda x,n:((x << n) | (x >> (32 - n))) & 0xffffffff,'big',[0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0],len(data)
+    
     # 补位
-    l = len(data)
     data += b'\x80' + (b'\x00' * (55 - (l % 64))) + (l * 8).to_bytes(8,byteorder)
     # 计算
     for ib in (data[i:i + 64] for i in range(0,len(data),64)):
         # 分组
-        W = []
-        for i in (ib[i:i + 4] for i in range(0,64,4)): W.append(int.from_bytes(i,byteorder))
-        for t in range(16,80): W.append(ROTL(W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16],1))
+        W = [0] * 0x50
+        W[0:16] = [int.from_bytes(ib[i:i + 4],byteorder) for i in range(0,64,4)]
+        for t in range(16,80): W[t] |= ROTL(W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16],1)
         
         # 计算
         a,b,c,d,e = h[0],h[1],h[2],h[3],h[4]
@@ -33,21 +31,21 @@ def SHA1(data:bytes) -> bytes:
     return h[0].to_bytes(4,byteorder) + h[1].to_bytes(4,byteorder) + h[2].to_bytes(4,byteorder) + h[3].to_bytes(4,byteorder) + h[4].to_bytes(4,byteorder)
 
 class SHA1s:
-    __slots__ = ('__h','__data','__surplus','__ROTL','length')
+    __slots__ = ('_h','_data','_surplus','_ROTL','_byteorder','length')
     def __calculate(self,data:bytes,h:bytes) -> bytes:
         for ib in (data[i:i + 64] for i in range(0,len(data),64)):
             # 分组
-            W = []
-            for i in (ib[i:i + 4] for i in range(0,64,4)): W.append(int.from_bytes(i,self.byteorder))
-            for t in range(16,80): W.append(self.__ROTL(W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16],1))
+            W = [0] * 0x50
+            W[0:16] = [int.from_bytes(ib[i:i + 4],self._byteorder) for i in range(0,64,4)]
+            for t in range(16,80): W[t] |= self._ROTL(W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16],1)
             
             # 计算
             a,b,c,d,e = h[0],h[1],h[2],h[3],h[4]
 
-            for i in range(0,20): a,b,c,d,e = (self.__ROTL(a,5) + ((b & c) | ((~ b) & d)) + e + 0x5a827999 + W[i]) & 0xffffffff,a,self.__ROTL(b,30),c,d
-            for i in range(20,40): a,b,c,d,e = (self.__ROTL(a,5) + (b ^ c ^ d) + e + 0x6ed9eba1 + W[i]) & 0xffffffff,a,self.__ROTL(b,30),c,d
-            for i in range(40,60): a,b,c,d,e = (self.__ROTL(a,5) + ((b & c) ^ (b & d) ^ (c & d)) + e + 0x8f1bbcdc + W[i]) & 0xffffffff,a,self.__ROTL(b,30),c,d
-            for i in range(60,80): a,b,c,d,e = (self.__ROTL(a,5) + (b ^ c ^ d) + e + 0xca62c1d6 + W[i]) & 0xffffffff,a,self.__ROTL(b,30),c,d
+            for i in range(0,20): a,b,c,d,e = (self._ROTL(a,5) + ((b & c) | ((~ b) & d)) + e + 0x5a827999 + W[i]) & 0xffffffff,a,self._ROTL(b,30),c,d
+            for i in range(20,40): a,b,c,d,e = (self._ROTL(a,5) + (b ^ c ^ d) + e + 0x6ed9eba1 + W[i]) & 0xffffffff,a,self._ROTL(b,30),c,d
+            for i in range(40,60): a,b,c,d,e = (self._ROTL(a,5) + ((b & c) ^ (b & d) ^ (c & d)) + e + 0x8f1bbcdc + W[i]) & 0xffffffff,a,self._ROTL(b,30),c,d
+            for i in range(60,80): a,b,c,d,e = (self._ROTL(a,5) + (b ^ c ^ d) + e + 0xca62c1d6 + W[i]) & 0xffffffff,a,self._ROTL(b,30),c,d
 
             h[0] += a
             h[1] += b
@@ -60,25 +58,24 @@ class SHA1s:
             h[3] &= 0xffffffff
             h[4] &= 0xffffffff
         return h
-
+        
     def __init__(self,data:bytes=b'') -> None:
-        self.__h,self.__ROTL,self.length,self.byteorder = [0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0],lambda x,n:((x << n) | (x >> (32 - n))) & 0xffffffff,len(data),'big'
+        self._h,self._ROTL,self.length,self._byteorder = [0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0],lambda x,n:((x << n) | (x >> (32 - n))) & 0xffffffff,len(data),'big'
         if self.length > 64:
-            self.__h,self.__data,self.__surplus = self.__calculate(data[:(self.length - self.length % 64)],self.__h),data[(self.length - self.length % 64):],self.length % 64
+            self._h,self._data,self._surplus = self.__calculate(data[:(self.length - self.length % 64)],self._h),data[(self.length - self.length % 64):],self.length % 64
         else:
-            self.__data, self.__surplus = data, self.length
+            self._data, self._surplus = data, self.length
     def append(self,data:bytes) -> None:
-        self.__data += data
+        self._data += data
         length = len(data)
-        self.__surplus += length
+        self._surplus += length
         self.length += length
-        if self.__surplus > 64:
-            self.__h,self.__data = self.__calculate(self.__data[:(self.__surplus - self.__surplus % 64)],self.__h),data[(self.__surplus - self.__surplus % 64):]
-            self.__surplus %= 64
+        if self._surplus > 64:
+            self._h,self._data = self.__calculate(self._data[:(self._surplus - self._surplus % 64)],self._h),data[(self._surplus - self._surplus % 64):]
+            self._surplus %= 64
     def get(self) -> bytes:
-        byteorder = 'big'
-        h = self.__calculate(self.__data+(b'\x80' + (b'\x00' * (55 - self.__surplus % 64)) + (self.length * 8).to_bytes(8,byteorder)),self.__h)
-        return h[0].to_bytes(4,byteorder) + h[1].to_bytes(4,byteorder) + h[2].to_bytes(4,byteorder) + h[3].to_bytes(4,byteorder) + h[4].to_bytes(4,byteorder)
+        h = self.__calculate(self._data+(b'\x80' + (b'\x00' * (55 - self._surplus % 64)) + (self.length * 8).to_bytes(8,self._byteorder)),self._h)
+        return h[0].to_bytes(4,self._byteorder) + h[1].to_bytes(4,self._byteorder) + h[2].to_bytes(4,self._byteorder) + h[3].to_bytes(4,self._byteorder) + h[4].to_bytes(4,self._byteorder)
 
 def Base64_encode(data:bytes,padding:str='=',table:dict[int:str]=
     {0:'A',1:'B',2:'C',3:'D',4:'E',5:'F',6:'G',7:'H',8:'I',9:'J',10:'K',11:'L',12:'M',
@@ -94,7 +91,7 @@ def Base64_encode(data:bytes,padding:str='=',table:dict[int:str]=
         Base64 += table[((i[0] << 4) & 0x30) | (i[1] >> 4) & 0x0f]
         Base64 += table[((i[1] << 2) & 0x3c) | (i[2] >> 6) & 0x03]
         Base64 += table[i[2] & 0x3f]
-    if b == 0: return Base64
+    if not b: return Base64
     return Base64[:-b] + (padding * b)
 
 def Base64_decode(Base64:str,padding:str='=',table:dict[str:int]=
@@ -116,3 +113,4 @@ def Base64_decode(Base64:str,padding:str='=',table:dict[str:int]=
             return data[:-2]
         return data[:-1]
     return data
+    
