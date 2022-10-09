@@ -24,15 +24,15 @@ class datasize():
     }
     def __init__(self,size:int):
         self.size = size
-    def to_str(self) -> str:
+    def __to_str(self) -> str:
         t = self.size
         i = 0.
-        while t > 100:
+        while t > 128:
             t /= 1024
             i += 1
         return str(round(t,2)) + self.base[i]
     def __repr__(self):
-        return self.to_str()
+        return self.__to_str()
     def __str__(self):
         return self.__repr__()
 
@@ -98,5 +98,5 @@ class SHA1():
         return "0x" + self.__repr__().hex()
 
 if __name__ == "__main__":
-    h = Crypto.SHA1(b"\x00\x0f\x00")
+    h = Crypto.SHA1(b"abc")
     print(SHA1(h,4,8,8))
