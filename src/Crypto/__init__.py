@@ -13,7 +13,7 @@ def SHA1(data:bytes) -> bytes:
         # 计算
         a,b,c,d,e = h[0],h[1],h[2],h[3],h[4]
 
-        for i in range(0,20): a,b,c,d,e = (ROTL(a,5) + ((b & c) | ((~ b) & d)) + e + 0x5a827999 + W[i]) & 0xffffffff,a,ROTL(b,30),c,d
+        for i in range(0,20): a,b,c,d,e = (ROTL(a,5) + ((b & c) ^ ((~ b) & d)) + e + 0x5a827999 + W[i]) & 0xffffffff,a,ROTL(b,30),c,d
         for i in range(20,40): a,b,c,d,e = (ROTL(a,5) + (b ^ c ^ d) + e + 0x6ed9eba1 + W[i]) & 0xffffffff,a,ROTL(b,30),c,d
         for i in range(40,60): a,b,c,d,e = (ROTL(a,5) + ((b & c) ^ (b & d) ^ (c & d)) + e + 0x8f1bbcdc + W[i]) & 0xffffffff,a,ROTL(b,30),c,d
         for i in range(60,80): a,b,c,d,e = (ROTL(a,5) + (b ^ c ^ d) + e + 0xca62c1d6 + W[i]) & 0xffffffff,a,ROTL(b,30),c,d
@@ -42,7 +42,7 @@ class SHA1s:
             # 计算
             a,b,c,d,e = h[0],h[1],h[2],h[3],h[4]
 
-            for i in range(0,20): a,b,c,d,e = (self._ROTL(a,5) + ((b & c) | ((~ b) & d)) + e + 0x5a827999 + W[i]) & 0xffffffff,a,self._ROTL(b,30),c,d
+            for i in range(0,20): a,b,c,d,e = (self._ROTL(a,5) + ((b & c) ^ ((~ b) & d)) + e + 0x5a827999 + W[i]) & 0xffffffff,a,self._ROTL(b,30),c,d
             for i in range(20,40): a,b,c,d,e = (self._ROTL(a,5) + (b ^ c ^ d) + e + 0x6ed9eba1 + W[i]) & 0xffffffff,a,self._ROTL(b,30),c,d
             for i in range(40,60): a,b,c,d,e = (self._ROTL(a,5) + ((b & c) ^ (b & d) ^ (c & d)) + e + 0x8f1bbcdc + W[i]) & 0xffffffff,a,self._ROTL(b,30),c,d
             for i in range(60,80): a,b,c,d,e = (self._ROTL(a,5) + (b ^ c ^ d) + e + 0xca62c1d6 + W[i]) & 0xffffffff,a,self._ROTL(b,30),c,d
