@@ -17,10 +17,9 @@ char* SHA1(char data[],unsigned int len){
 
 int main()
 {
-    /* 我的第一个 C 程序 */
-    char data[] = "abc\n\x00";
-    unsigned int len = 5;
-    printf("%s",SHA1(data,5));
+    char data[] = "abc";
+    unsigned int len = 3;
+    printf("%s\n",SHA1(data,5));
  
     return 0;
 }
