@@ -37,7 +37,7 @@ def SHA1(M:bytes) -> bytes:
     # Parsing the Message 分解消息 (NIST.FIPS.180-4 第5.2.1节): 
     # M = [[M[i0:i0+64][i1:i1+4] for i1 in range(0,64,4)] for i0 in range(0,(e//512+1)*64,64)]
     # 将 M 分解成 N 个 512bit
-    N = (e//512+1)
+    N = ((e+32)//512+1)
     M = [M[i:i+64] for i in range(0,N*64,64)]
     # 将每个 512bit 分解成 16 个 32bit 
     M = [[int.from_bytes(Mi[i:i+4],"big") for i in range(0,64,4)] for Mi in M]
