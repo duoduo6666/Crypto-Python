@@ -2,7 +2,7 @@ def SHA1(data:bytes) -> bytes:
     ROTL,byteorder,h,l = lambda x,n:((x << n) | (x >> (32 - n))) & 0xffffffff,'big',[0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0],len(data)
     
     # 补位
-    data += b'\x80' + (b'\x00' * (55 - (l % 64))) + (l * 8).to_bytes(8,byteorder)
+    data += b'\x80' + (b'\x00' * (56 - ((l+1) % 64))) + (l * 8).to_bytes(8,byteorder)
     # 计算
     for ib in (data[i:i + 64] for i in range(0,len(data),64)):
         # 分组

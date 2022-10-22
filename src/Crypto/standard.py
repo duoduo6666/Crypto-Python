@@ -30,7 +30,7 @@ def SHA1(M:bytes) -> bytes:
     # Padding the Message 填充消息 (NIST.FIPS.180-4 第5.1.1节): 
     # 附加 0b10000000 到 M 末尾 
     M += b"\x80"
-    # 附加 k/8 个 0b00000000, k 是 e+1+k=448mod512 的最小非负解 (NIST.FIPS.180-4 第5.1.1节)
+    # 附加 k 个 0, k 是 e+1+k=448mod512 的最小非负解 (NIST.FIPS.180-4 第5.1.1节)
     M += b"\x00" * ((448-((e+8)%512)) // 8)
     # 附加 64bit 的数据长度(以bit为单位, 大端序big-endian)
     M += e.to_bytes(8, "big")
