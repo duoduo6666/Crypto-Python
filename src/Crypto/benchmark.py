@@ -28,7 +28,7 @@ class size():
         t = self.size
         i = 0.
         while t > 128:
-            t /= 1024
+            t /= 1000
             i += 1
         return str(round(t,2)) + self.base[i]
     def __repr__(self):
