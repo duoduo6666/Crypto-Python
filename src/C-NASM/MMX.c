@@ -17,12 +17,12 @@ int main()
     while (1)
     {
         start = clock();
-        for(int a = 0; a < 262144; a++ ){
+        for(int a = 0; a < 2621440; a++ ){
             MMX_add();
             }
         end = clock();
         // printf("\r%ld/s",1/(end-start));
-        printf("\r%lu/s",clock_sec/(end-start)*262144);
+        printf("\r%lu/s",clock_sec/(end-start)*2621440);
     }
     
 
